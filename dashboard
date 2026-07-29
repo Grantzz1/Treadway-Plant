@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TP Owner Dashboard — V1.3B</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--g:#234d32;--c:#faf7ef;--w:#fff;--l:#ded9cd;--t:#233027;--red:#a22;--yellow:#9a7000;--green:#28723e}
+*{box-sizing:border-box}body{margin:0;background:var(--c);color:var(--t);font-family:Arial,sans-serif}
+header{background:var(--g);color:#fff;padding:28px 20px}header h1{margin:0;font-size:1.8rem}header p{margin:5px 0 0}
+main{max-width:1050px;margin:auto;padding:25px 18px}.card{background:#fff;border:1px solid var(--l);border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 5px 18px #234d3210}
+h2{color:var(--g);margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.plant{border:1px solid var(--l);border-radius:14px;padding:16px}.plant h3{margin:0 0 12px;color:var(--g)}
+label{display:block;font-size:.9rem;font-weight:700;margin-top:10px}input{width:100%;padding:10px;border:1px solid #cfc9bb;border-radius:9px;font:inherit}
+button{border:0;border-radius:999px;padding:11px 17px;font-weight:700;cursor:pointer}.primary{background:var(--g);color:#fff}.secondary{background:#eee}.danger{background:#f4dddd;color:var(--red)}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}.muted{color:#667069;font-size:.9rem}.status{font-weight:700;margin-top:12px;display:inline-block}.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}
+.notice{padding:14px;border-radius:12px;background:#fff3cd;border:1px solid #e4c75c;margin-bottom:20px}
+.success{background:#edf5ea;border-color:#bdd8b7}.error{background:#fdeaea;border-color:#e0b0b0}
+.hidden{display:none}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.userbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+footer{text-align:center;padding:25px;color:#667069}
+@media(max-width:600px){.row{grid-template-columns:1fr}.userbar{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><h1>🌱 Treadway Plants</h1><p>Owner Dashboard — V1.3B</p></header>
+<main>
+
+<div id="setupCard" class="card">
+<h2>🔧 One-Time Dashboard Setup</h2>
+<p class="muted">Enter your Supabase project URL and publishable key. They are saved only in this browser. Do not enter a database password or secret/service-role key.</p>
+<label>Supabase Project URL</label>
+<input id="supabaseUrl" value="https://hywvsvplhwdikxvcxavd.supabase.co" placeholder="https://your-project.supabase.co">
+<label>Supabase Publishable Key</label>
+<input id="supabaseKey" type="password" placeholder="sb_publishable_...">
+<div class="actions"><button class="primary" onclick="connectSupabase()">Connect</button></div>
+<p id="setupMsg" class="notice hidden"></p>
+</div>
+
+<div id="loginCard" class="card hidden">
+<h2>🔐 TP Owner Login</h2>
+<p class="muted">Sign in with the Supabase account you added under Authentication → Users.</p>
+<label>Email</label><input id="email" type="email" autocomplete="email">
+<label>Password</label><input id="password" type="password" autocomplete="current-password">
+<div class="actions"><button class="primary" onclick="login()">Sign In</button></div>
+<p id="loginMsg" class="notice hidden"></p>
+</div>
+
+<div id="app" class="hidden">
+<div class="card">
+<div class="userbar"><div><strong>🌱 Owner Dashboard</strong><div id="userEmail" class="muted"></div></div><button class="secondary" onclick="logout()">Sign Out</button></div>
+</div>
+
+<div id="msg" class="notice hidden"></div>
+
+<div class="card">
+<h2>📦 Inventory</h2>
+<p class="muted">Edit quantities and save. Inventory is stored in your Supabase database.</p>
+<div id="plants" class="grid"></div>
+<div class="actions"><button class="primary" onclick="saveInventory()">💾 Save Inventory</button><button class="secondary" onclick="loadInventory()">↻ Reload</button></div>
+</div>
+
+<div class="card">
+<h2>📊 Inventory Summary</h2>
+<div id="summary" class="muted">Loading…</div>
+</div>
+</div>
+</main>
+<footer>Build on Faith & Family. • Grown by Grant Treadway</footer>
+
+<script>
+const PLANTS=["Basil","Parsley","Oregano","Mint","Tomato","Peppers","Watermelon","Pumpkin","Corn","Lettuce","Pansy","Marigold","Petunia","Zinnia","Calendula","Viola","Dianthus","Lavender"];
+const STORAGE_URL="tpSupabaseUrl", STORAGE_KEY="tpSupabasePublishableKey";
+let supabaseClient=null, currentUser=null;
+
+function $(id){return document.getElementById(id)}
+function msg(id,text,type=""){const el=$(id);el.textContent=text;el.className="notice "+type;el.classList.remove("hidden")}
+function hide(id){$(id).classList.add("hidden")}
+
+function connectSupabase(){
+ const url=$("supabaseUrl").value.trim().replace(/\/+$/,"");
+ const key=$("supabaseKey").value.trim();
+ if(!url||!key){msg("setupMsg","Enter both the Project URL and publishable key.","error");return}
+ try{new URL(url)}catch(e){msg("setupMsg","That Project URL doesn't look valid.","error");return}
+ localStorage.setItem(STORAGE_URL,url);localStorage.setItem(STORAGE_KEY,key);
+ supabaseClient=window.supabase.createClient(url,key);
+ msg("setupMsg","✓ Connected. You can now sign in.","success");
+ $("loginCard").classList.remove("hidden");
+ $("setupCard").classList.add("hidden");
+}
+
+function init(){
+ const url=localStorage.getItem(STORAGE_URL),key=localStorage.getItem(STORAGE_KEY);
+ if(url&&key){
+   $("supabaseUrl").value=url;
+   supabaseClient=window.supabase.createClient(url,key);
+   $("setupCard").classList.add("hidden");
+   $("loginCard").classList.remove("hidden");
+ }
+}
+async function login(){
+ if(!supabaseClient){msg("loginMsg","Connect Supabase first.","error");return}
+ const email=$("email").value.trim(),password=$("password").value;
+ if(!email||!password){msg("loginMsg","Enter your email and password.","error");return}
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error){msg("loginMsg",error.message,"error");return}
+ currentUser=data.user;showApp();
+}
+async function logout(){await supabaseClient.auth.signOut();currentUser=null;$("app").classList.add("hidden");$("loginCard").classList.remove("hidden")}
+function showApp(){
+ $("loginCard").classList.add("hidden");$("app").classList.remove("hidden");$("userEmail").textContent=currentUser.email||"Signed in";
+ loadInventory();
+}
+function cardFor(name,i,row={seedling:0,growing:0,established:0}){
+ return `<div class="plant"><h3>${name}</h3><div class="row">
+ <label>Seedling<input id="s${i}" type="number" min="0" value="${row.seedling??0}" oninput="updateStatus(${i})"></label>
+ <label>Growing<input id="g${i}" type="number" min="0" value="${row.growing??0}" oninput="updateStatus(${i})"></label>
+ <label>Established<input id="e${i}" type="number" min="0" value="${row.established??0}" oninput="updateStatus(${i})"></label>
+ </div><span id="st${i}" class="status"></span></div>`;
+}
+function render(rows){
+ const byName={};rows.forEach(r=>byName[r.plant_name]=r);
+ $("plants").innerHTML=PLANTS.map((p,i)=>cardFor(p,i,byName[p])).join("");
+ PLANTS.forEach((p,i)=>updateStatus(i));updateSummary();
+}
+function getRows(){
+ return PLANTS.map((p,i)=>({plant_name:p,seedling:Math.max(0,+$("s"+i).value||0),growing:Math.max(0,+$("g"+i).value||0),established:Math.max(0,+$("e"+i).value||0)}));
+}
+async function loadInventory(){
+ msg("msg","Loading inventory…");
+ const {data,error}=await supabaseClient.from("Inventory").select("id,plant_name,seedling,growing,established").eq("owner_id",currentUser.id);
+ if(error){msg("msg","Could not load inventory: "+error.message,"error");return}
+ render(data||[]);msg("msg","✓ Inventory loaded from Supabase.","success");
+}
+async function saveInventory(){
+ const rows=getRows();
+ const payload=rows.map(r=>({...r,owner_id:currentUser.id}));
+ const {error}=await supabaseClient.from("Inventory").upsert(payload,{onConflict:"owner_id,plant_name"});
+ if(error){msg("msg","Could not save inventory: "+error.message+" — If this mentions a unique constraint, we'll add one to the table next.","error");return}
+ msg("msg","✓ Inventory saved to Supabase!","success");updateSummary();
+}
+async function deleteAllOwnerRows(){
+ if(!confirm("Delete all of your inventory rows? This cannot be undone."))return;
+ const {error}=await supabaseClient.from("Inventory").delete().eq("owner_id",currentUser.id);
+ if(error){msg("msg",error.message,"error");return}render([]);msg("msg","Inventory cleared.","success");
+}
+function updateStatus(i){
+ const vals=[+$("s"+i).value||0,+$("g"+i).value||0,+$("e"+i).value||0],total=vals.reduce((a,b)=>a+b,0),el=$("st"+i);
+ if(total===0){el.textContent="○ Out of stock";el.className="status red"}
+ else if(total<=2){el.textContent="● Limited";el.className="status yellow"}
+ else{el.textContent="● Available";el.className="status green"}
+ updateSummary();
+}
+function updateSummary(){
+ if(!$("plants").children.length)return;
+ const rows=getRows(),total=rows.reduce((sum,r)=>sum+r.seedling+r.growing+r.established,0);
+ const available=rows.filter(r=>r.seedling+r.growing+r.established>0).length;
+ $("summary").textContent=total?`You have ${total} plants/units entered across ${available} plant types.`:"No inventory entered yet.";
+}
+init();
+</script>
+</body>
+</html>"""
+
+(out/"dashboard.html").write_text(html,encoding="utf-8")
+zip_path=Path("/mnt/data/treadway-plants-dashboard-v1.3B.zip")
+with zipfile.ZipFile(zip_path,"w",zipfile.ZIP_DEFLATED) as z:
+    z.write(out/"dashboard.html","dashboard.html")
+print(zip_path)
