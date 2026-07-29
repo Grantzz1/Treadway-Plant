@@ -1,0 +1,1269 @@
+from pathlib import Path
+
+dashboard = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TP Owner Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+    --green:#234d32;
+    --cream:#faf7ef;
+    --white:#ffffff;
+    --line:#ded9cd;
+    --text:#233027;
+    --lightgreen:#edf5ea;
+    --yellow:#fff3cd;
+    --red:#fdeaea;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:var(--cream);
+    color:var(--text);
+    font-family:Arial,sans-serif;
+}
+
+header{
+    background:var(--green);
+    color:white;
+    padding:30px 18px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+    font-family:Georgia,serif;
+    font-size:2.2rem;
+}
+
+header p{
+    margin:8px 0 0;
+}
+
+main{
+    max-width:1100px;
+    margin:auto;
+    padding:25px 16px;
+}
+
+.card{
+    background:white;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:20px;
+}
+
+h2{
+    color:var(--green);
+    margin-top:0;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="number"]{
+    width:100%;
+    padding:11px;
+    margin-top:5px;
+    border:1px solid #cfc9bb;
+    border-radius:9px;
+    font:inherit;
+}
+
+button{
+    border:0;
+    border-radius:999px;
+    padding:11px 18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.primary{
+    background:var(--green);
+    color:white;
+}
+
+.secondary{
+    background:#eeeeee;
+    color:var(--text);
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+}
+
+.notice{
+    padding:13px;
+    border-radius:10px;
+    background:var(--yellow);
+    border:1px solid #e4c75c;
+    margin-top:15px;
+}
+
+.success{
+    background:var(--lightgreen);
+    border-color:#bdd8b7;
+}
+
+.error{
+    background:var(--red);
+    border-color:#e0b0b0;
+}
+
+.hidden{
+    display:none;
+}
+
+.userbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.muted{
+    color:#667069;
+    font-size:.9rem;
+}
+
+.inventory-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:15px;
+}
+
+.plant{
+    border:1px solid var(--line);
+    border-radius:15px;
+    padding:17px;
+}
+
+.plant h3{
+    color:var(--green);
+    margin-top:0;
+    margin-bottom:5px;
+}
+
+.quantity-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:9px;
+}
+
+.quantity-grid label{
+    font-size:.85rem;
+}
+
+.public-setting{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:15px;
+    font-size:.9rem;
+}
+
+.public-setting input{
+    width:auto;
+    margin:0;
+}
+
+.status{
+    display:inline-block;
+    margin-top:12px;
+    font-weight:bold;
+}
+
+.available{
+    color:#28723e;
+}
+
+.limited{
+    color:#9a7000;
+}
+
+.out{
+    color:#a22;
+}
+
+.summary{
+    font-size:1.1rem;
+    line-height:1.8;
+}
+
+footer{
+    text-align:center;
+    color:#667069;
+    padding:30px;
+}
+
+@media(max-width:600px){
+    .quantity-grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌱 Treadway Plants</h1>
+    <p>Owner Dashboard</p>
+</header>
+
+<main>
+
+<!-- CONNECTION -->
+<section id="connectionCard" class="card">
+
+    <h2>🔧 Connect to TP Database</h2>
+
+    <p class="muted">
+        Enter your Supabase Project URL and your publishable key.
+        Never use a secret or service-role key here.
+    </p>
+
+    <label>
+        Supabase Project URL
+
+        <input
+            id="supabaseUrl"
+            type="text"
+            value="https://hywvsvplhwdikxvcxavd.supabase.co"
+        >
+    </label>
+
+    <label>
+        Supabase Publishable Key
+
+        <input
+            id="supabaseKey"
+            type="password"
+            placeholder="sb_publishable_..."
+        >
+    </label>
+
+    <div class="actions">
+
+        <button
+            class="primary"
+            onclick="connectDatabase()"
+        >
+            Connect
+        </button>
+
+    </div>
+
+    <div
+        id="connectionMessage"
+        class="notice hidden"
+    ></div>
+
+</section>
+
+
+<!-- LOGIN -->
+<section
+    id="loginCard"
+    class="card hidden"
+>
+
+    <h2>🔐 Owner Login</h2>
+
+    <p class="muted">
+        Sign in with the owner account you created in Supabase.
+    </p>
+
+    <label>
+        Email
+
+        <input
+            id="email"
+            type="email"
+            autocomplete="email"
+        >
+    </label>
+
+    <label>
+        Password
+
+        <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+        >
+    </label>
+
+    <div class="actions">
+
+        <button
+            class="primary"
+            onclick="login()"
+        >
+            Sign In
+        </button>
+
+    </div>
+
+    <div
+        id="loginMessage"
+        class="notice hidden"
+    ></div>
+
+</section>
+
+
+<!-- DASHBOARD -->
+<section
+    id="dashboard"
+    class="hidden"
+>
+
+    <section class="card">
+
+        <div class="userbar">
+
+            <div>
+
+                <strong>
+                    🌱 TP Inventory Manager
+                </strong>
+
+                <div
+                    id="userEmail"
+                    class="muted"
+                ></div>
+
+            </div>
+
+            <button
+                class="secondary"
+                onclick="logout()"
+            >
+                Sign Out
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>📦 Manage Inventory</h2>
+
+        <p class="muted">
+            These are the numbers customers can see on your public
+            Treadway Plants website.
+        </p>
+
+        <div
+            id="message"
+            class="notice hidden"
+        ></div>
+
+        <div
+            id="inventoryGrid"
+            class="inventory-grid"
+        ></div>
+
+        <div class="actions">
+
+            <button
+                class="primary"
+                onclick="saveInventory()"
+            >
+                💾 Save Inventory
+            </button>
+
+            <button
+                class="secondary"
+                onclick="loadInventory()"
+            >
+                ↻ Reload
+            </button>
+
+            <button
+                class="secondary"
+                onclick="clearAll()"
+            >
+                Clear All
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>📊 Inventory Summary</h2>
+
+        <div
+            id="summary"
+            class="summary"
+        >
+            No inventory entered yet.
+        </div>
+
+    </section>
+
+</section>
+
+</main>
+
+<footer>
+    Build on Faith & Family • Grown by Grant Treadway
+</footer>
+
+
+<script>
+
+/*
+====================================================
+TP SUPABASE SETTINGS
+====================================================
+*/
+
+let supabaseClient = null;
+let currentUser = null;
+
+
+/*
+====================================================
+PLANT LIST
+====================================================
+*/
+
+const plants = [
+    "Basil",
+    "Parsley",
+    "Oregano",
+    "Mint",
+    "Tomato",
+    "Peppers",
+    "Watermelon",
+    "Pumpkin",
+    "Corn",
+    "Pansy",
+    "Marigold",
+    "Petunia",
+    "Zinnia",
+    "Calendula",
+    "Viola",
+    "Dianthus",
+    "Lavender"
+];
+
+
+/*
+====================================================
+HELPERS
+====================================================
+*/
+
+function showMessage(id, text, type=""){
+
+    const element = document.getElementById(id);
+
+    element.textContent = text;
+
+    element.className = "notice " + type;
+
+    element.classList.remove("hidden");
+}
+
+
+function hideMessage(id){
+
+    document
+        .getElementById(id)
+        .classList.add("hidden");
+
+}
+
+
+/*
+====================================================
+CONNECT
+====================================================
+*/
+
+function connectDatabase(){
+
+    const url =
+        document
+            .getElementById("supabaseUrl")
+            .value
+            .trim();
+
+    const key =
+        document
+            .getElementById("supabaseKey")
+            .value
+            .trim();
+
+
+    if(!url || !key){
+
+        showMessage(
+            "connectionMessage",
+            "Please enter both the Project URL and publishable key.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try{
+
+        supabaseClient =
+            window.supabase.createClient(
+                url,
+                key
+            );
+
+
+        localStorage.setItem(
+            "tp_supabase_url",
+            url
+        );
+
+        localStorage.setItem(
+            "tp_supabase_key",
+            key
+        );
+
+
+        document
+            .getElementById("connectionCard")
+            .classList.add("hidden");
+
+        document
+            .getElementById("loginCard")
+            .classList.remove("hidden");
+
+
+    }catch(error){
+
+        showMessage(
+            "connectionMessage",
+            "Could not connect to Supabase.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/*
+====================================================
+LOGIN
+====================================================
+*/
+
+async function login(){
+
+    const email =
+        document
+            .getElementById("email")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("password")
+            .value;
+
+
+    if(!email || !password){
+
+        showMessage(
+            "loginMessage",
+            "Enter your email and password.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const result =
+        await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+
+    if(result.error){
+
+        showMessage(
+            "loginMessage",
+            result.error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    currentUser = result.data.user;
+
+
+    document
+        .getElementById("loginCard")
+        .classList.add("hidden");
+
+    document
+        .getElementById("dashboard")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("userEmail")
+        .textContent =
+            currentUser.email || "";
+
+
+    await loadInventory();
+
+}
+
+
+/*
+====================================================
+LOGOUT
+====================================================
+*/
+
+async function logout(){
+
+    if(supabaseClient){
+
+        await supabaseClient.auth.signOut();
+
+    }
+
+    currentUser = null;
+
+    location.reload();
+
+}
+
+
+/*
+====================================================
+CREATE INVENTORY CARDS
+====================================================
+*/
+
+function renderInventory(rows){
+
+    const inventory = {};
+
+
+    (rows || []).forEach(function(row){
+
+        inventory[row.plant_name] = row;
+
+    });
+
+
+    const grid =
+        document.getElementById("inventoryGrid");
+
+
+    grid.innerHTML =
+        plants.map(function(plant, index){
+
+            const row =
+                inventory[plant] || {};
+
+
+            const seedling =
+                Number(row.seedling || 0);
+
+            const growing =
+                Number(row.growing || 0);
+
+            const established =
+                Number(row.established || 0);
+
+
+            const isPublic =
+                row.is_public !== false;
+
+
+            return `
+
+                <div class="plant">
+
+                    <h3>
+                        ${plant}
+                    </h3>
+
+                    <div class="quantity-grid">
+
+                        <label>
+                            Seedling
+
+                            <input
+                                id="seedling-${index}"
+                                type="number"
+                                min="0"
+                                value="${seedling}"
+                                oninput="updateStatus(${index})"
+                            >
+                        </label>
+
+
+                        <label>
+                            Growing
+
+                            <input
+                                id="growing-${index}"
+                                type="number"
+                                min="0"
+                                value="${growing}"
+                                oninput="updateStatus(${index})"
+                            >
+                        </label>
+
+
+                        <label>
+                            Established
+
+                            <input
+                                id="established-${index}"
+                                type="number"
+                                min="0"
+                                value="${established}"
+                                oninput="updateStatus(${index})"
+                            >
+                        </label>
+
+                    </div>
+
+
+                    <label class="public-setting">
+
+                        <input
+                            id="public-${index}"
+                            type="checkbox"
+                            ${isPublic ? "checked" : ""}
+                        >
+
+                        Show this plant on public website
+
+                    </label>
+
+
+                    <span
+                        id="status-${index}"
+                        class="status"
+                    ></span>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+
+    plants.forEach(function(_, index){
+
+        updateStatus(index);
+
+    });
+
+
+    updateSummary();
+
+}
+
+
+/*
+====================================================
+LOAD INVENTORY
+====================================================
+*/
+
+async function loadInventory(){
+
+    if(!supabaseClient || !currentUser){
+
+        return;
+
+    }
+
+
+    const result =
+        await supabaseClient
+            .from("Inventory")
+            .select(
+                "plant_name,seedling,growing,established,is_public"
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            );
+
+
+    if(result.error){
+
+        showMessage(
+            "message",
+            "Could not load inventory: " +
+            result.error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    renderInventory(result.data);
+
+
+    showMessage(
+        "message",
+        "✓ Inventory loaded.",
+        "success"
+    );
+
+}
+
+
+/*
+====================================================
+SAVE INVENTORY
+====================================================
+*/
+
+async function saveInventory(){
+
+    if(!supabaseClient || !currentUser){
+
+        return;
+
+    }
+
+
+    const rows = [];
+
+
+    plants.forEach(function(plant,index){
+
+        const seedling =
+            Number(
+                document
+                    .getElementById(
+                        "seedling-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const growing =
+            Number(
+                document
+                    .getElementById(
+                        "growing-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const established =
+            Number(
+                document
+                    .getElementById(
+                        "established-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const isPublic =
+            document
+                .getElementById(
+                    "public-" + index
+                )
+                .checked;
+
+
+        rows.push({
+
+            owner_id: currentUser.id,
+
+            plant_name: plant,
+
+            seedling: seedling,
+
+            growing: growing,
+
+            established: established,
+
+            is_public: isPublic
+
+        });
+
+    });
+
+
+    const result =
+        await supabaseClient
+            .from("Inventory")
+            .upsert(
+                rows,
+                {
+                    onConflict:
+                        "owner_id,plant_name"
+                }
+            );
+
+
+    if(result.error){
+
+        showMessage(
+            "message",
+            "Save failed: " +
+            result.error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    showMessage(
+        "message",
+        "✓ Inventory saved! The public website can now see the changes.",
+        "success"
+    );
+
+
+    updateSummary();
+
+}
+
+
+/*
+====================================================
+STATUS
+====================================================
+*/
+
+function updateStatus(index){
+
+    const seedling =
+        Number(
+            document
+                .getElementById(
+                    "seedling-" + index
+                )
+                .value
+        ) || 0;
+
+
+    const growing =
+        Number(
+            document
+                .getElementById(
+                    "growing-" + index
+                )
+                .value
+        ) || 0;
+
+
+    const established =
+        Number(
+            document
+                .getElementById(
+                    "established-" + index
+                )
+                .value
+        ) || 0;
+
+
+    const total =
+        seedling +
+        growing +
+        established;
+
+
+    const status =
+        document.getElementById(
+            "status-" + index
+        );
+
+
+    if(total === 0){
+
+        status.textContent =
+            "○ Out of Stock";
+
+        status.className =
+            "status out";
+
+    }else if(total <= 2){
+
+        status.textContent =
+            "● Limited";
+
+        status.className =
+            "status limited";
+
+    }else{
+
+        status.textContent =
+            "● Available";
+
+        status.className =
+            "status available";
+
+    }
+
+
+    updateSummary();
+
+}
+
+
+/*
+====================================================
+SUMMARY
+====================================================
+*/
+
+function updateSummary(){
+
+    const grid =
+        document.getElementById(
+            "inventoryGrid"
+        );
+
+
+    if(!grid.children.length){
+
+        return;
+
+    }
+
+
+    let totalPlants = 0;
+    let availableTypes = 0;
+    let limitedTypes = 0;
+
+
+    plants.forEach(function(_,index){
+
+        const seedling =
+            Number(
+                document
+                    .getElementById(
+                        "seedling-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const growing =
+            Number(
+                document
+                    .getElementById(
+                        "growing-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const established =
+            Number(
+                document
+                    .getElementById(
+                        "established-" + index
+                    )
+                    .value
+            ) || 0;
+
+
+        const total =
+            seedling +
+            growing +
+            established;
+
+
+        totalPlants += total;
+
+
+        if(total > 2){
+
+            availableTypes++;
+
+        }else if(total > 0){
+
+            limitedTypes++;
+
+        }
+
+    });
+
+
+    document
+        .getElementById("summary")
+        .innerHTML = `
+
+            <b>Total plants/units:</b>
+            ${totalPlants}
+
+            <br>
+
+            <b>Available plant types:</b>
+            ${availableTypes}
+
+            <br>
+
+            <b>Limited plant types:</b>
+            ${limitedTypes}
+
+        `;
+
+}
+
+
+/*
+====================================================
+CLEAR ALL
+====================================================
+*/
+
+function clearAll(){
+
+    const confirmed =
+        confirm(
+            "Clear every inventory number on this dashboard? This will not save until you press Save Inventory."
+        );
+
+
+    if(!confirmed){
+
+        return;
+
+    }
+
+
+    plants.forEach(function(_,index){
+
+        document
+            .getElementById(
+                "seedling-" + index
+            )
+            .value = 0;
+
+
+        document
+            .getElementById(
+                "growing-" + index
+            )
+            .value = 0;
+
+
+        document
+            .getElementById(
+                "established-" + index
+            )
+            .value = 0;
+
+
+        updateStatus(index);
+
+    });
+
+}
+
+
+/*
+====================================================
+AUTO CONNECT
+====================================================
+*/
+
+(function(){
+
+    const savedUrl =
+        localStorage.getItem(
+            "tp_supabase_url"
+        );
+
+    const savedKey =
+        localStorage.getItem(
+            "tp_supabase_key"
+        );
+
+
+    if(savedUrl && savedKey){
+
+        document
+            .getElementById(
+                "supabaseUrl"
+            )
+            .value = savedUrl;
+
+
+        supabaseClient =
+            window.supabase.createClient(
+                savedUrl,
+                savedKey
+            );
+
+
+        document
+            .getElementById(
+                "connectionCard"
+            )
+            .classList.add("hidden");
+
+
+        document
+            .getElementById(
+                "loginCard"
+            )
+            .classList.remove("hidden");
+
+    }
+
+})();
+
+</script>
+
+</body>
+</html>
+"""
+
+path = Path("/mnt/data/dashboard")
+path.write_text(dashboard, encoding="utf-8")
+
+print(path)
