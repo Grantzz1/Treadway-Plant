@@ -1,109 +1,110 @@
-<!doctype html>
+from pathlib import Path
+import zipfile
+
+root = Path("/mnt/data/treadway-plants-v1.3-inventory")
+root.mkdir(parents=True, exist_ok=True)
+
+index_html = r"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TP Owner Dashboard</title>
+<title>Treadway Plants</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--g:#234d32;--c:#faf7ef;--w:#fff;--l:#ded9cd;--t:#233027}
+:root{--g:#234d32;--c:#faf7ef;--w:#fff;--l:#ded9cd;--t:#233027;--p:#76577d}
 *{box-sizing:border-box}body{margin:0;background:var(--c);color:var(--t);font-family:Arial,sans-serif}
-header{background:var(--g);color:#fff;padding:28px 20px}header h1{margin:0;font-size:1.8rem}header p{margin:5px 0 0}
-main{max-width:1050px;margin:auto;padding:25px 18px}.notice{background:#fff3cd;border:1px solid #e4c75c;border-radius:12px;padding:14px;margin-bottom:20px}
-.card{background:var(--w);border:1px solid var(--l);border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 5px 18px #234d3210}
-h2{color:var(--g);margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.plant{border:1px solid var(--l);border-radius:14px;padding:16px}.plant h3{margin:0 0 12px;color:var(--g)}
-label{display:block;font-size:.9rem;font-weight:700;margin-top:10px}input{width:100%;padding:10px;border:1px solid #cfc9bb;border-radius:9px;font:inherit}
-button{border:0;border-radius:999px;padding:11px 17px;font-weight:700;cursor:pointer}.save{background:var(--g);color:#fff}.reset{background:#eee;margin-left:8px}
-.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}.muted{color:#667069;font-size:.9rem}
-.status{font-weight:700;margin-top:12px;display:inline-block}.green{color:#28723e}.yellow{color:#9a7000}.red{color:#a22}
-footer{text-align:center;padding:25px;color:#667069}
-@media(max-width:600px){.row{grid-template-columns:1fr}.reset{margin:8px 0 0}}
+header{background:var(--g);color:#fff;text-align:center;padding:34px 18px}header h1{font:3rem Georgia,serif;margin:0}header p{margin:8px 0}
+nav{background:#fff;border-bottom:1px solid var(--l);padding:12px;text-align:center;position:sticky;top:0;z-index:5}nav a{color:var(--g);font-weight:700;text-decoration:none;margin:0 10px}
+main{max-width:1000px;margin:auto;padding:25px 16px}.hero,.card{background:#fff;border:1px solid var(--l);border-radius:18px;padding:24px;margin-bottom:20px}.hero{text-align:center}
+.hero h2,h2{color:var(--g)}.hero h2{font:2rem Georgia,serif;margin:0 0 8px}.tag{font-weight:700}.small{font-size:.9rem;color:#667069}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.item{border:1px solid var(--l);border-radius:14px;padding:16px}.item h3{color:var(--g);margin-top:0}.flower h3{color:var(--p)}
+.price{line-height:1.7}.price b{color:var(--g)}.availability{margin-top:12px;padding:9px;border-radius:9px;font-weight:700;background:#f1f1f1}.available{color:#28723e;background:#edf5ea}.limited{color:#9a7000;background:#fff3cd}.out{color:#a22;background:#fdeaea}
+form{display:grid;gap:12px}label{font-weight:700}input,textarea{width:100%;padding:11px;border:1px solid #cfc9bb;border-radius:9px;font:inherit}textarea{min-height:100px}button{background:var(--g);color:#fff;border:0;border-radius:999px;padding:12px 18px;font-weight:700;font-size:1rem}
+.notice{padding:13px;border-radius:10px;background:#fff3cd;border:1px solid #e4c75c}.footer{text-align:center;padding:30px;color:#667069}
 </style>
 </head>
 <body>
-<header><h1>🌱 Treadway Plants</h1><p>Owner Dashboard — V1.3A</p></header>
+<header><h1>TREADWAY PLANTS</h1><p>Bringing your home to life. 🌱</p></header>
+<nav><a href="#menu">Menu</a><a href="#inventory">Availability</a><a href="#order">Order</a><a href="#about">About</a></nav>
 <main>
-<div class="notice"><strong>Prototype mode:</strong> inventory is saved only in this browser for now. It is not connected to a secure database yet. We'll connect Supabase before using this as a real private dashboard.</div>
+<section class="hero"><h2>Welcome to Treadway Plants</h2><p>Plants grown with care, rooted in faith and family.</p><p class="tag">Build on Faith & Family • Grown by Grant Treadway</p></section>
 
-<div class="card">
-<h2>📦 Inventory</h2>
-<p class="muted">Enter how many plants you currently have at each stage. Leave a field at 0 when you have none.</p>
-<div id="plants" class="grid"></div>
-<br>
-<button class="save" onclick="saveInventory()">Save Inventory</button>
-<button class="reset" onclick="resetInventory()">Reset</button>
-<p id="saved" class="status"></p>
+<section id="menu" class="card">
+<h2>🌿 Plant Menu & Pricing</h2><p class="small">Prices are Seedling • Growing Plant • Established.</p>
+<h3>Herbs</h3><div class="grid">
+<div class="item"><h3>Basil</h3><div class="price">$1.00 • $2.00 • <b>$4.00</b></div></div>
+<div class="item"><h3>Parsley</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
+<div class="item"><h3>Oregano (P)</h3><div class="price">$2.00 • $4.00 • <b>$6.00</b></div></div>
+<div class="item"><h3>Mint (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
 </div>
+<h3>Vegetables & Fruits</h3><div class="grid">
+<div class="item"><h3>Tomato</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
+<div class="item"><h3>Peppers</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
+<div class="item"><h3>Watermelon</h3><div class="price">$2.50 • $4.00 • <b>$5.00</b></div></div>
+<div class="item"><h3>Pumpkin</h3><div class="price">$2.50 • $4.00 • <b>$5.00</b></div></div>
+<div class="item"><h3>Corn (6 Pack)</h3><div class="price">$6.00 • $8.50 • <b>$11.00</b></div></div>
+</div>
+<h3>🌸 Flowers</h3><div class="grid">
+<div class="item flower"><h3>Pansy</h3><div class="price">$1.50 • $2.25 • <b>$3.00</b></div></div>
+<div class="item flower"><h3>Marigold</h3><div class="price">$1.50 • $2.25 • <b>$3.00</b></div></div>
+<div class="item flower"><h3>Petunia</h3><div class="price">$1.75 • $2.50 • <b>$4.00</b></div></div>
+<div class="item flower"><h3>Zinnia</h3><div class="price">$1.75 • $2.50 • <b>$4.00</b></div></div>
+<div class="item flower"><h3>Calendula</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
+<div class="item flower"><h3>Viola</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
+<div class="item flower"><h3>Dianthus (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.50</b></div></div>
+<div class="item flower"><h3>Lavender (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
+</div>
+</section>
 
-<div class="card">
-<h2>📊 Inventory Summary</h2>
-<div id="summary" class="muted">No inventory entered yet.</div>
-</div>
+<section id="inventory" class="card">
+<h2>📦 Current Inventory</h2>
+<p class="small">This is view-only. Inventory is updated from the TP Owner Dashboard.</p>
+<div id="inventoryGrid" class="grid"><div class="notice">Loading current inventory…</div></div>
+<p id="inventoryUpdated" class="small"></p>
+</section>
+
+<section id="order" class="card">
+<h2>📋 Place an Order</h2>
+<p class="notice">Orders are requests. TP will confirm availability and the final total.</p>
+<form action="https://formsubmit.co/granttreadway1@icloud.com" method="POST">
+<input type="hidden" name="_subject" value="New Treadway Plants Order"><input type="hidden" name="_captcha" value="false">
+<label>Your name<input name="name" required></label><label>Your email<input name="email" type="email" required></label>
+<label>Plant / variety<input name="plant" required placeholder="Example: Pansy"></label><label>Quantity<input name="quantity" type="number" min="1" required></label>
+<label>Notes<textarea name="notes"></textarea></label><button type="submit">Send Order Request 🌱</button>
+</form></section>
+
+<section id="about" class="card"><h2>🌱 About Treadway Plants</h2><p>Treadway Plants is a small plant-growing business built around faith, family, and growing plants with care.</p><p><b>Build on Faith & Family.</b></p></section>
 </main>
-<footer>Build on Faith & Family. • Grown by Grant Treadway</footer>
+<div class="footer">Thank you for supporting Treadway Plants! • Grown by Grant Treadway.</div>
 
 <script>
-const plants=[
-"Basil","Parsley","Oregano","Mint","Tomato","Peppers","Watermelon","Pumpkin","Corn","Lettuce",
-"Pansy","Marigold","Petunia","Zinnia","Calendula","Viola","Dianthus","Lavender"
-];
+const SUPABASE_URL="https://hywvsvplhwdikxvcxavd.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const names=["Basil","Parsley","Oregano","Mint","Tomato","Peppers","Watermelon","Pumpkin","Corn","Pansy","Marigold","Petunia","Zinnia","Calendula","Viola","Dianthus","Lavender"];
 
-function render(){
- const data=JSON.parse(localStorage.getItem("tpInventory")||"{}");
- document.getElementById("plants").innerHTML=plants.map((p,i)=>{
-   const x=data[p]||{seedling:0,growing:0,established:0};
-   return `<div class="plant"><h3>${p}</h3>
-   <div class="row">
-   <label>Seedling<input id="s${i}" type="number" min="0" value="${x.seedling}"></label>
-   <label>Growing<input id="g${i}" type="number" min="0" value="${x.growing}"></label>
-   <label>Established<input id="e${i}" type="number" min="0" value="${x.established}"></label>
-   </div>
-   <span id="st${i}" class="status"></span></div>`;
+function availability(row){
+ const total=(row?.seedling||0)+(row?.growing||0)+(row?.established||0);
+ if(total===0)return ["Out of stock","out"];
+ if(total<=2)return ["Limited","limited"];
+ return ["Available","available"];
+}
+async function loadPublicInventory(){
+ const box=document.getElementById("inventoryGrid");
+ const {data,error}=await sb.from("Inventory").select("plant_name,seedling,growing,established").eq("is_public",true);
+ if(error){box.innerHTML='<div class="notice">Inventory is temporarily unavailable.</div>';return}
+ const map={};(data||[]).forEach(r=>map[r.plant_name]=r);
+ box.innerHTML=names.map(n=>{
+   const r=map[n]||{seedling:0,growing:0,established:0};
+   const [label,cls]=availability(r);
+   return `<div class="item"><h3>${n}</h3>
+   <p class="small">Seedlings: ${r.seedling||0}<br>Growing: ${r.growing||0}<br>Established: ${r.established||0}</p>
+   <div class="availability ${cls}">${label}</div></div>`;
  }).join("");
- updateSummary(data);
- plants.forEach((p,i)=>updateStatus(i));
+ document.getElementById("inventoryUpdated").textContent="Live inventory • Refresh the page for the latest update.";
 }
-function read(){
- const data={};
- plants.forEach((p,i)=>data[p]={
-   seedling:+document.getElementById("s"+i).value||0,
-   growing:+document.getElementById("g"+i).value||0,
-   established:+document.getElementById("e"+i).value||0
- });
- return data;
-}
-function saveInventory(){
- const data=read();
- localStorage.setItem("tpInventory",JSON.stringify(data));
- document.getElementById("saved").textContent="✓ Saved on this device";
- updateSummary(data);
- plants.forEach((p,i)=>updateStatus(i));
-}
-function resetInventory(){
- if(confirm("Reset this browser's TP inventory to blank?")){
-   localStorage.removeItem("tpInventory"); render();
-   document.getElementById("saved").textContent="Inventory reset";
- }
-}
-function updateStatus(i){
- const vals=[+document.getElementById("s"+i).value||0,+document.getElementById("g"+i).value||0,+document.getElementById("e"+i).value||0];
- const total=vals.reduce((a,b)=>a+b,0), el=document.getElementById("st"+i);
- if(total===0){el.textContent="○ Out of stock";el.className="status red"}
- else if(total<=2){el.textContent="● Limited";el.className="status yellow"}
- else{el.textContent="● Available";el.className="status green"}
-}
-function updateSummary(data){
- const all=Object.values(data||{}).flatMap(x=>[x.seedling,x.growing,x.established]);
- const total=all.reduce((a,b)=>a+b,0);
- document.getElementById("summary").textContent=total?`You have ${total} plants/units entered across your inventory.`:"No inventory entered yet.";
-}
-render();
+loadPublicInventory();
 </script>
 </body>
 </html>"""
-
-(root/"dashboard.html").write_text(html, encoding="utf-8")
-zip_path=Path("/mnt/data/treadway-plants-dashboard-v1.3A.zip")
-with zipfile.ZipFile(zip_path,"w",zipfile.ZIP_DEFLATED) as z:
-    z.write(root/"dashboard.html","dashboard.html")
-print(zip_path)
