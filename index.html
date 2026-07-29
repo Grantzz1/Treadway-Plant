@@ -6,18 +6,19 @@
 <title>Treadway Plants | Build on Faith & Family</title>
 <meta name="description" content="Treadway Plants — locally grown plants in Middle Tennessee.">
 <style>
-:root{--green:#234d32;--green2:#3f704c;--cream:#faf7ef;--purple:#6d4a7d;--text:#233027;--card:#fff;--line:#ded9cd}
+:root{--green:#234d32;--cream:#faf7ef;--purple:#6d4a7d;--text:#233027;--card:#fff;--line:#ded9cd}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--text);line-height:1.55}
 nav{position:sticky;top:0;background:rgba(250,247,239,.96);border-bottom:1px solid var(--line);z-index:10}.nav{max-width:1100px;margin:auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:18px}.logo{font-weight:800;color:var(--green);font-size:1.15rem}.links{display:flex;gap:16px;flex-wrap:wrap}.links a{color:var(--text);text-decoration:none;font-weight:600}
 .hero{background:linear-gradient(135deg,#e9f1e7,#faf7ef);padding:80px 20px;text-align:center}.hero h1{font-size:clamp(2.4rem,7vw,5rem);margin:0;color:var(--green);letter-spacing:.04em}.hero p{font-size:1.2rem;margin:10px auto;max-width:650px}.btn{display:inline-block;background:var(--green);color:white!important;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700;margin:8px 5px;border:0;cursor:pointer;font-size:1rem}.btn.alt{background:var(--purple)}
 section{max-width:1100px;margin:auto;padding:55px 20px}h2{text-align:center;color:var(--green);font-size:2rem;margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 5px 18px rgba(35,77,50,.06)}.card h3{margin-top:0;color:var(--green)}.flowers h2,.flowers h3{color:var(--purple)}.price{font-weight:700}.small{font-size:.9rem;color:#5d675f}
+.inventory-card{min-height:160px}.inventory-number{font-size:1.6rem;font-weight:800;color:#777;margin:10px 0}.status{display:inline-block;padding:5px 10px;border-radius:999px;background:#eee;color:#666;font-size:.85rem;font-weight:700}
 form{max-width:700px;margin:auto;background:white;padding:25px;border:1px solid var(--line);border-radius:18px}label{display:block;font-weight:700;margin:13px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #cfc9bb;border-radius:10px;font:inherit}textarea{min-height:120px}.notice{display:none;margin:15px auto;padding:16px;border-radius:12px;background:#edf3ea;color:var(--green);font-weight:700;max-width:700px}
 footer{background:var(--green);color:white;text-align:center;padding:35px 20px}@media(max-width:650px){.nav{align-items:flex-start;flex-direction:column}.links{gap:10px;font-size:.92rem}.hero{padding:60px 18px}}
 </style>
 </head>
 <body>
 <nav><div class="nav"><div class="logo">🌿 TREADWAY PLANTS</div><div class="links">
-<a href="#home">Home</a><a href="#plants">Plants</a><a href="#orders">Custom Orders</a><a href="#about">About TP</a><a href="#contact">Contact</a>
+<a href="#home">Home</a><a href="#plants">Plants</a><a href="#inventory">Inventory</a><a href="#orders">Custom Orders</a><a href="#about">About TP</a><a href="#contact">Contact</a>
 </div></div></nav>
 
 <header id="home" class="hero">
@@ -41,10 +42,20 @@ footer{background:var(--green);color:white;text-align:center;padding:35px 20px}@
 <section class="flowers"><h2>🌸 Flowers</h2><div class="grid">
 <div class="card"><h3>Pansy</h3><p class="price">$1.50 / $2.25 / $3</p></div><div class="card"><h3>Marigold</h3><p class="price">$1.50 / $2.25 / $3</p></div><div class="card"><h3>Petunia</h3><p class="price">$1.75 / $2.50 / $4</p></div><div class="card"><h3>Zinnia</h3><p class="price">$1.75 / $2.50 / $4</p></div><div class="card"><h3>Calendula</h3><p class="price">$2 / $3 / $4</p></div><div class="card"><h3>Viola</h3><p class="price">$2 / $3 / $4</p></div><div class="card"><h3>Dianthus (P)</h3><p class="price">$2 / $3.50 / $5.50</p></div><div class="card"><h3>Lavender (P)</h3><p class="price">$2 / $3.50 / $5</p></div></div><p class="small" style="text-align:center">(P) = Perennial</p></section>
 
+<section id="inventory">
+<h2>📦 TP Inventory</h2>
+<p style="text-align:center">Current inventory will be added and managed here as Treadway Plants grows.</p>
+<div class="grid">
+<div class="card inventory-card"><h3>🌿 Herbs</h3><div class="inventory-number">—</div><span class="status">Inventory not set</span><p class="small">Basil • Parsley • Oregano • Mint</p></div>
+<div class="card inventory-card"><h3>🌽 Vegetables & Fruits</h3><div class="inventory-number">—</div><span class="status">Inventory not set</span><p class="small">Tomato • Peppers • Watermelon • Pumpkin • Corn • Lettuce</p></div>
+<div class="card inventory-card"><h3>🌸 Flowers</h3><div class="inventory-number">—</div><span class="status">Inventory not set</span><p class="small">Pansy • Marigold • Petunia • Zinnia • Calendula • Viola • Dianthus • Lavender</p></div>
+</div>
+<p class="small" style="text-align:center;margin-top:20px">Inventory numbers are intentionally blank for now. A private inventory management system will be connected in a future update.</p>
+</section>
+
 <section><h2>🪴 Plant Stages</h2><div class="grid"><div class="card"><h3>Seedling</h3><p>Newly sprouted, small plant.</p></div><div class="card"><h3>Growing Plant</h3><p>Healthy plant with multiple true leaves.</p></div><div class="card"><h3>Established</h3><p>Strong, transplant-ready plant with a developed root system.</p></div></div></section>
 
 <section id="orders"><h2>🌱 Custom Orders</h2><p style="text-align:center">Have something specific in mind? Send a request and Grant will review it.</p>
-<div id="success" class="notice">🌱 Request received! Your request has been sent to Treadway Plants. Grant will review it and contact you.</div>
 <form action="https://formsubmit.co/granttreadway1@icloud.com" method="POST">
 <input type="hidden" name="_subject" value="New Treadway Plants Custom Order Request">
 <input type="hidden" name="_template" value="table">
@@ -65,9 +76,9 @@ footer{background:var(--green);color:white;text-align:center;padding:35px 20px}@
 <section id="contact"><h2>📬 Contact</h2><div class="card" style="text-align:center"><p>For general questions, use the Custom Order request or contact Treadway Plants directly.</p><p><strong>Serving Middle Tennessee.</strong></p></div></section>
 <footer><strong>TREADWAY PLANTS</strong><br>Grown with Care. Rooted in Quality.<br>Build on Faith & Family.<br><br>Grown by Grant Treadway • Serving Middle Tennessee</footer>
 </body></html>"""
-(site/"index.html").write_text(html, encoding="utf-8")
 
-zip_path=Path("/mnt/data/treadway-plants-v1.2.zip")
-with zipfile.ZipFile(zip_path,"w",zipfile.ZIP_DEFLATED) as z:
-    z.write(site/"index.html","index.html")
-print(zip_path)
+(site/"index.html").write_text(html, encoding="utf-8")
+zip_path = Path("/mnt/data/treadway-plants-v1.3.zip")
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    z.write(site/"index.html", "index.html")
+print(f"Created {zip_path}")
