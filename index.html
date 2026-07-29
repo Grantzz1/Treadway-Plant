@@ -1,104 +1,806 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Treadway Plants</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{--g:#234d32;--c:#faf7ef;--w:#fff;--l:#ded9cd;--t:#233027;--p:#76577d}
-*{box-sizing:border-box}body{margin:0;background:var(--c);color:var(--t);font-family:Arial,sans-serif}
-header{background:var(--g);color:#fff;text-align:center;padding:34px 18px}header h1{font:3rem Georgia,serif;margin:0}header p{margin:8px 0}
-nav{background:#fff;border-bottom:1px solid var(--l);padding:12px;text-align:center;position:sticky;top:0;z-index:5}nav a{color:var(--g);font-weight:700;text-decoration:none;margin:0 10px}
-main{max-width:1000px;margin:auto;padding:25px 16px}.hero,.card{background:#fff;border:1px solid var(--l);border-radius:18px;padding:24px;margin-bottom:20px}.hero{text-align:center}
-.hero h2,h2{color:var(--g)}.hero h2{font:2rem Georgia,serif;margin:0 0 8px}.tag{font-weight:700}.small{font-size:.9rem;color:#667069}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.item{border:1px solid var(--l);border-radius:14px;padding:16px}.item h3{color:var(--g);margin-top:0}.flower h3{color:var(--p)}
-.price{line-height:1.7}.price b{color:var(--g)}.availability{margin-top:12px;padding:9px;border-radius:9px;font-weight:700;background:#f1f1f1}.available{color:#28723e;background:#edf5ea}.limited{color:#9a7000;background:#fff3cd}.out{color:#a22;background:#fdeaea}
-form{display:grid;gap:12px}label{font-weight:700}input,textarea{width:100%;padding:11px;border:1px solid #cfc9bb;border-radius:9px;font:inherit}textarea{min-height:100px}button{background:var(--g);color:#fff;border:0;border-radius:999px;padding:12px 18px;font-weight:700;font-size:1rem}
-.notice{padding:13px;border-radius:10px;background:#fff3cd;border:1px solid #e4c75c}.footer{text-align:center;padding:30px;color:#667069}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Treadway Plants</title>
+
+    <style>
+        :root {
+            --green: #234d32;
+            --cream: #faf7ef;
+            --white: #ffffff;
+            --line: #ded9cd;
+            --text: #233027;
+            --purple: #76577d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--cream);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background: var(--green);
+            color: white;
+            text-align: center;
+            padding: 35px 18px;
+        }
+
+        header h1 {
+            font-family: Georgia, serif;
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+        }
+
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--line);
+            padding: 12px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        nav a {
+            color: var(--green);
+            font-weight: bold;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: auto;
+            padding: 25px 16px;
+        }
+
+        .hero,
+        .card {
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .hero {
+            text-align: center;
+        }
+
+        .hero h2,
+        h2 {
+            color: var(--green);
+        }
+
+        .hero h2 {
+            font-family: Georgia, serif;
+            font-size: 2rem;
+            margin: 0 0 8px;
+        }
+
+        .tag {
+            font-weight: bold;
+        }
+
+        .small {
+            font-size: 0.9rem;
+            color: #667069;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(240px, 1fr)
+            );
+            gap: 14px;
+        }
+
+        .item {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .item h3 {
+            color: var(--green);
+            margin-top: 0;
+        }
+
+        .flower h3 {
+            color: var(--purple);
+        }
+
+        .price {
+            line-height: 1.7;
+        }
+
+        .price b {
+            color: var(--green);
+        }
+
+        /* INVENTORY */
+
+        .inventory-box {
+            margin-top: 15px;
+        }
+
+        .availability {
+            margin-top: 12px;
+            padding: 9px;
+            border-radius: 9px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .available {
+            color: #28723e;
+            background: #edf5ea;
+        }
+
+        .limited {
+            color: #9a7000;
+            background: #fff3cd;
+        }
+
+        .out {
+            color: #a22;
+            background: #fdeaea;
+        }
+
+        .inventory-number {
+            line-height: 1.7;
+        }
+
+        form {
+            display: grid;
+            gap: 12px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cfc9bb;
+            border-radius: 9px;
+            font: inherit;
+            margin-top: 5px;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        button {
+            background: var(--green);
+            color: white;
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .notice {
+            padding: 13px;
+            border-radius: 10px;
+            background: #fff3cd;
+            border: 1px solid #e4c75c;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #667069;
+        }
+
+        .owner-link {
+            color: var(--green);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .owner-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2.3rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<header><h1>TREADWAY PLANTS</h1><p>Bringing your home to life. 🌱</p></header>
-<nav><a href="#menu">Menu</a><a href="#inventory">Availability</a><a href="#order">Order</a><a href="#about">About</a></nav>
+
+<header>
+    <h1>TREADWAY PLANTS</h1>
+    <p>Bringing your home to life. 🌱</p>
+</header>
+
+<nav>
+    <a href="#menu">Menu</a>
+    <a href="#inventory">Inventory</a>
+    <a href="#order">Order</a>
+    <a href="#about">About</a>
+</nav>
+
 <main>
-<section class="hero"><h2>Welcome to Treadway Plants</h2><p>Plants grown with care, rooted in faith and family.</p><p class="tag">Build on Faith & Family • Grown by Grant Treadway</p></section>
 
-<section id="menu" class="card">
-<h2>🌿 Plant Menu & Pricing</h2><p class="small">Prices are Seedling • Growing Plant • Established.</p>
-<h3>Herbs</h3><div class="grid">
-<div class="item"><h3>Basil</h3><div class="price">$1.00 • $2.00 • <b>$4.00</b></div></div>
-<div class="item"><h3>Parsley</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
-<div class="item"><h3>Oregano (P)</h3><div class="price">$2.00 • $4.00 • <b>$6.00</b></div></div>
-<div class="item"><h3>Mint (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
-</div>
-<h3>Vegetables & Fruits</h3><div class="grid">
-<div class="item"><h3>Tomato</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
-<div class="item"><h3>Peppers</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
-<div class="item"><h3>Watermelon</h3><div class="price">$2.50 • $4.00 • <b>$5.00</b></div></div>
-<div class="item"><h3>Pumpkin</h3><div class="price">$2.50 • $4.00 • <b>$5.00</b></div></div>
-<div class="item"><h3>Corn (6 Pack)</h3><div class="price">$6.00 • $8.50 • <b>$11.00</b></div></div>
-</div>
-<h3>🌸 Flowers</h3><div class="grid">
-<div class="item flower"><h3>Pansy</h3><div class="price">$1.50 • $2.25 • <b>$3.00</b></div></div>
-<div class="item flower"><h3>Marigold</h3><div class="price">$1.50 • $2.25 • <b>$3.00</b></div></div>
-<div class="item flower"><h3>Petunia</h3><div class="price">$1.75 • $2.50 • <b>$4.00</b></div></div>
-<div class="item flower"><h3>Zinnia</h3><div class="price">$1.75 • $2.50 • <b>$4.00</b></div></div>
-<div class="item flower"><h3>Calendula</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
-<div class="item flower"><h3>Viola</h3><div class="price">$2.00 • $3.00 • <b>$4.00</b></div></div>
-<div class="item flower"><h3>Dianthus (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.50</b></div></div>
-<div class="item flower"><h3>Lavender (P)</h3><div class="price">$2.00 • $3.50 • <b>$5.00</b></div></div>
-</div>
-</section>
+    <!-- WELCOME -->
+    <section class="hero">
 
-<section id="inventory" class="card">
-<h2>📦 Current Inventory</h2>
-<p class="small">This is view-only. Inventory is updated from the TP Owner Dashboard.</p>
-<div id="inventoryGrid" class="grid"><div class="notice">Loading current inventory…</div></div>
-<p id="inventoryUpdated" class="small"></p>
-</section>
+        <h2>Welcome to Treadway Plants</h2>
 
-<section id="order" class="card">
-<h2>📋 Place an Order</h2>
-<p class="notice">Orders are requests. TP will confirm availability and the final total.</p>
-<form action="https://formsubmit.co/granttreadway1@icloud.com" method="POST">
-<input type="hidden" name="_subject" value="New Treadway Plants Order"><input type="hidden" name="_captcha" value="false">
-<label>Your name<input name="name" required></label><label>Your email<input name="email" type="email" required></label>
-<label>Plant / variety<input name="plant" required placeholder="Example: Pansy"></label><label>Quantity<input name="quantity" type="number" min="1" required></label>
-<label>Notes<textarea name="notes"></textarea></label><button type="submit">Send Order Request 🌱</button>
-</form></section>
+        <p>
+            Plants grown with care, rooted in faith and family.
+        </p>
 
-<section id="about" class="card"><h2>🌱 About Treadway Plants</h2><p>Treadway Plants is a small plant-growing business built around faith, family, and growing plants with care.</p><p><b>Build on Faith & Family.</b></p></section>
+        <p class="tag">
+            Build on Faith & Family • Grown by Grant Treadway
+        </p>
+
+    </section>
+
+
+    <!-- MENU -->
+    <section id="menu" class="card">
+
+        <h2>🌿 Plant Menu & Pricing</h2>
+
+        <p class="small">
+            Prices are listed as Seedling • Growing Plant • Established.
+        </p>
+
+
+        <!-- HERBS -->
+
+        <h3>Herbs 🌿</h3>
+
+        <div class="grid">
+
+            <div class="item">
+                <h3>Basil</h3>
+                <div class="price">
+                    $1.00 • $2.00 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Parsley</h3>
+                <div class="price">
+                    $2.00 • $3.50 • <b>$5.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Oregano (P)</h3>
+                <div class="price">
+                    $2.00 • $4.00 • <b>$6.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Mint (P)</h3>
+                <div class="price">
+                    $2.00 • $3.50 • <b>$5.00</b>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- VEGETABLES -->
+
+        <h3>Vegetables & Fruits 🌽</h3>
+
+        <div class="grid">
+
+            <div class="item">
+                <h3>Tomato 🍅</h3>
+                <div class="price">
+                    $2.00 • $3.00 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Peppers 🌶️</h3>
+                <div class="price">
+                    $2.00 • $3.00 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Watermelon 🍉</h3>
+                <div class="price">
+                    $2.50 • $4.00 • <b>$5.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Pumpkin 🎃</h3>
+                <div class="price">
+                    $2.50 • $4.00 • <b>$5.00</b>
+                </div>
+            </div>
+
+            <div class="item">
+                <h3>Corn (6 Pack) 🌽</h3>
+                <div class="price">
+                    $6.00 • $8.50 • <b>$11.00</b>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- FLOWERS -->
+
+        <h3>Flowers 🌸</h3>
+
+        <div class="grid">
+
+            <div class="item flower">
+                <h3>Pansy</h3>
+                <div class="price">
+                    $1.50 • $2.25 • <b>$3.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Marigold</h3>
+                <div class="price">
+                    $1.50 • $2.25 • <b>$3.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Petunia</h3>
+                <div class="price">
+                    $1.75 • $2.50 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Zinnia</h3>
+                <div class="price">
+                    $1.75 • $2.50 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Calendula</h3>
+                <div class="price">
+                    $2.00 • $3.00 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Viola</h3>
+                <div class="price">
+                    $2.00 • $3.00 • <b>$4.00</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Dianthus (P)</h3>
+                <div class="price">
+                    $2.00 • $3.50 • <b>$5.50</b>
+                </div>
+            </div>
+
+            <div class="item flower">
+                <h3>Lavender (P)</h3>
+                <div class="price">
+                    $2.00 • $3.50 • <b>$5.00</b>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- INVENTORY -->
+
+    <section id="inventory" class="card">
+
+        <h2>📦 Current Inventory</h2>
+
+        <p class="small">
+            Current inventory is updated by Treadway Plants.
+            Customers can view inventory but cannot edit it.
+        </p>
+
+        <div
+            id="inventoryGrid"
+            class="grid"
+        >
+
+            <div class="notice">
+                Loading current inventory...
+            </div>
+
+        </div>
+
+        <p
+            id="inventoryUpdated"
+            class="small"
+        ></p>
+
+    </section>
+
+
+    <!-- ORDER -->
+
+    <section id="order" class="card">
+
+        <h2>📋 Place an Order</h2>
+
+        <p class="notice">
+            Orders are requests. TP will confirm availability
+            and the final total.
+        </p>
+
+        <form
+            action="https://formsubmit.co/granttreadway1@icloud.com"
+            method="POST"
+        >
+
+            <input
+                type="hidden"
+                name="_subject"
+                value="New Treadway Plants Order"
+            >
+
+            <input
+                type="hidden"
+                name="_captcha"
+                value="false"
+            >
+
+            <label>
+                Your Name
+
+                <input
+                    type="text"
+                    name="name"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Your Email
+
+                <input
+                    type="email"
+                    name="email"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Plant / Variety
+
+                <input
+                    type="text"
+                    name="plant"
+                    placeholder="Example: Pansy"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Quantity
+
+                <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Notes
+
+                <textarea
+                    name="notes"
+                    placeholder="Anything else you want TP to know?"
+                ></textarea>
+
+            </label>
+
+
+            <button type="submit">
+                Send Order Request 🌱
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ABOUT -->
+
+    <section id="about" class="card">
+
+        <h2>🌱 About Treadway Plants</h2>
+
+        <p>
+            Treadway Plants is a small plant-growing business
+            built around faith, family, and growing plants with care.
+        </p>
+
+        <p>
+            <b>Build on Faith & Family.</b>
+        </p>
+
+    </section>
+
 </main>
-<div class="footer">Thank you for supporting Treadway Plants! • Grown by Grant Treadway.</div>
+
+
+<!-- FOOTER -->
+
+<div class="footer">
+
+    <p>
+        Thank you for supporting Treadway Plants!
+    </p>
+
+    <p>
+        Grown by Grant Treadway.
+    </p>
+
+    <!-- OWNER LOGIN -->
+
+    <p>
+        <a
+            class="owner-link"
+            href="dashboard"
+        >
+            🔐 Owner Login
+        </a>
+    </p>
+
+</div>
+
 
 <script>
-const SUPABASE_URL="https://hywvsvplhwdikxvcxavd.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="PASTE_YOUR_PUBLISHABLE_KEY_HERE";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-const names=["Basil","Parsley","Oregano","Mint","Tomato","Peppers","Watermelon","Pumpkin","Corn","Pansy","Marigold","Petunia","Zinnia","Calendula","Viola","Dianthus","Lavender"];
 
-function availability(row){
- const total=(row?.seedling||0)+(row?.growing||0)+(row?.established||0);
- if(total===0)return ["Out of stock","out"];
- if(total<=2)return ["Limited","limited"];
- return ["Available","available"];
-}
-async function loadPublicInventory(){
- const box=document.getElementById("inventoryGrid");
- const {data,error}=await sb.from("Inventory").select("plant_name,seedling,growing,established").eq("is_public",true);
- if(error){box.innerHTML='<div class="notice">Inventory is temporarily unavailable.</div>';return}
- const map={};(data||[]).forEach(r=>map[r.plant_name]=r);
- box.innerHTML=names.map(n=>{
-   const r=map[n]||{seedling:0,growing:0,established:0};
-   const [label,cls]=availability(r);
-   return `<div class="item"><h3>${n}</h3>
-   <p class="small">Seedlings: ${r.seedling||0}<br>Growing: ${r.growing||0}<br>Established: ${r.established||0}</p>
-   <div class="availability ${cls}">${label}</div></div>`;
- }).join("");
- document.getElementById("inventoryUpdated").textContent="Live inventory • Refresh the page for the latest update.";
-}
-loadPublicInventory();
+    /*
+        SUPABASE CONNECTION
+
+        Put your Supabase publishable key between the quotes below.
+        Do NOT put a secret/service-role key here.
+    */
+
+    const SUPABASE_URL =
+        "https://hywvsvplhwdikxvcxavd.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+        "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+
+    /*
+        PLANTS SHOWN IN PUBLIC INVENTORY
+    */
+
+    const plants = [
+        "Basil",
+        "Parsley",
+        "Oregano",
+        "Mint",
+        "Tomato",
+        "Peppers",
+        "Watermelon",
+        "Pumpkin",
+        "Corn",
+        "Pansy",
+        "Marigold",
+        "Petunia",
+        "Zinnia",
+        "Calendula",
+        "Viola",
+        "Dianthus",
+        "Lavender"
+    ];
+
+
+    /*
+        DETERMINE INVENTORY STATUS
+    */
+
+    function getAvailability(row) {
+
+        const seedling =
+            Number(row?.seedling || 0);
+
+        const growing =
+            Number(row?.growing || 0);
+
+        const established =
+            Number(row?.established || 0);
+
+        const total =
+            seedling +
+            growing +
+            established;
+
+
+        if (total === 0) {
+
+            return {
+                text: "Out of Stock",
+                className: "out"
+            };
+
+        }
+
+
+        if (total <= 2) {
+
+            return {
+                text: "Limited",
+                className: "limited"
+            };
+
+        }
+
+
+        return {
+            text: "Available",
+            className: "available"
+        };
+
+    }
+
+
+    /*
+        LOAD INVENTORY FROM SUPABASE
+    */
+
+    async function loadPublicInventory() {
+
+        const inventoryGrid =
+            document.getElementById(
+                "inventoryGrid"
+            );
+
+
+        const { data, error } =
+            await supabaseClient
+                .from("Inventory")
+                .select(
+                    "plant_name, seedling, growing, established"
+                )
+                .eq("is_public", true);
+
+
+        if (error) {
+
+            inventoryGrid.innerHTML = `
+                <div class="notice">
+                    Inventory is temporarily unavailable.
+                </div>
+            `;
+
+            console.error(error);
+
+            return;
+
+        }
+
+
+        const inventory = {};
+
+
+        (data || []).forEach(function(row) {
+
+            inventory[row.plant_name] = row;
+
+        });
+
+
+        inventoryGrid.innerHTML =
+            plants.map(function(plant) {
+
+                const row =
+                    inventory[plant] || {
+                        seedling: 0,
+                        growing: 0,
+                        established: 0
+                    };
+
+
+                const availability =
+                    getAvailability(row);
+
+
+                return `
+                    <div class="item">
+
+                        <h3>
+                            ${plant}
+                        </h3>
+
+                        <div class="inventory-number">
+
+                            Seedlings:
+                            <b>${row.seedling || 0}</b>
+
+                            <br>
+
+                            Growing:
+                            <b>${row.growing || 0}</b>
+
+                            <br>
+
+                            Established:
+                            <b>${row.established || 0}</b>
+
+                        </div>
+
+
+                        <div
+                            class="availability ${availability.className}"
+                        >
+                            ${availability.text}
+                        </div>
+
+                    </div>
+                `;
+
+            }).join("");
+
+
+        document.getElementById(
+            "inventoryUpdated"
+        ).textContent =
+            "Live inventory • Refresh the page for the latest update.";
+
+    }
+
+
+    /*
+        START INVENTORY
+    */
+
+    loadPublicInventory();
+
 </script>
+
 </body>
-</html>"""
+</html>
